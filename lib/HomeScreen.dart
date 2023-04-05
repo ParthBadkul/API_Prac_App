@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hey1/models/Users.dart';
 import 'package:http/http.dart' as http;
+import 'package:hey1/services/user_api.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,36 +18,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    fetchdata();
+    fetchData();
   }
 
-  void fetchdata() async {
-    print('Fuction started');
-    const url = "https://randomuser.me/api/?results=50";
-    final uri = Uri.parse(url);
-    final response = await http.get(uri);
-    final body = response.body;
-    final json = jsonDecode(body);
-    final results = json['results'] as List<dynamic>;
+  Future<void> fetchData() async {
+    final response = await UserApi.fetchUsers();
     setState(() {
-      users = results.map((e) {
-        final name = UserName(
-            first: e['name']['first'],
-            last: e['name']['last'],
-            title: e['name']['title']);
-        final pic = Picture(thumbnail: e['picture']['thumbnail']);
-
-        return Users(
-          email: e['email'],
-          gender: e['gender'],
-          phone: e['phone'],
-          name: name,
-          pic: pic,
-        );
-      }).toList();
+      users = response;
     });
-
-    print('fuction ran');
   }
 
   @override
@@ -61,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // final user = users[index];
 
             return ListTile(
-              title: Text(users[index].name.first),
+              title: Text(users[index].fullName),
               leading: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: Image.network(users[index].pic.thumbnail.toString())),
@@ -71,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         )),
-        floatingActionButton: FloatingActionButton(onPressed: fetchdata),
+        floatingActionButton: FloatingActionButton(onPressed: fetchData),
       ),
     );
   }

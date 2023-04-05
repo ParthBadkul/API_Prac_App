@@ -12,6 +12,9 @@ class Users {
     required this.name,
     required this.pic,
   });
+  String get fullName {
+    return '${name.title} ${name.first} ${name.last}';
+  }
 }
 
 class UserName {
