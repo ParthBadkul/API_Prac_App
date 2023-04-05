@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:hey1/models/Users.dart';
 import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
@@ -11,17 +12,41 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<dynamic> users = [];
+  List<Users> users = [];
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchdata();
+  }
 
   void fetchdata() async {
-    const url = "https://randomuser.me/api/?results=100";
+    print('Fuction started');
+    const url = "https://randomuser.me/api/?results=50";
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
     final json = jsonDecode(body);
-    users = json['results'];
+    final results = json['results'] as List<dynamic>;
+    setState(() {
+      users = results.map((e) {
+        final name = UserName(
+            first: e['name']['first'],
+            last: e['name']['last'],
+            title: e['name']['title']);
+        final pic = Picture(thumbnail: e['picture']['thumbnail']);
 
-    print(users);
+        return Users(
+          email: e['email'],
+          gender: e['gender'],
+          phone: e['phone'],
+          name: name,
+          pic: pic,
+        );
+      }).toList();
+    });
+
+    print('fuction ran');
   }
 
   @override
@@ -33,13 +58,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListView.builder(
           itemCount: users.length,
           itemBuilder: (context, index) {
+            // final user = users[index];
+
             return ListTile(
-              title: Text(users[index]['name']['first'].toString()),
+              title: Text(users[index].name.first),
               leading: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Image.network(
-                      users[index]['picture']['thumbnail'].toString())),
-              subtitle: Text(users[index]['email']),
+                  child: Image.network(users[index].pic.thumbnail.toString())),
+              subtitle: Text(users[index].email),
+              // tileColor:
+              // users[index].gender == 'male' ? Colors.amber : Colors.black12,
             );
           },
         )),
